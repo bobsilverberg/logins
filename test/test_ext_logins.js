@@ -165,6 +165,28 @@ add_task(function* test_logins() {
   response = yield run(privilegedExtension, "search", query);
   equal(response.results.length, 0, "search() after privileged remove found 0 records");
 
+  // Tests for check exceptions.
+
+  let record3 = {
+    formSubmitURL: "https://test1.mozilla.com/testpage",
+    origin: "https://test2.mozilla.com",
+    realm: null,
+    username: "joe",
+    password: "joes sekrit password",
+    usernameField: "username",
+    passwordField: "password",
+  };
+
+  response = yield run(privilegedExtension, "store", record3);
+  equal("Origin does not match formSubmitURL", response.errmsg,
+        "Trying to store a record with a mismatched formSubmitURL and origin generated a good error.");
+
+  record3.formSubmitURL = "not_a_valid_url";
+
+  response = yield run(privilegedExtension, "store", record3);
+  equal("Cannot parse formSubmitURL as a URL", response.errmsg,
+        "Trying to store a record with an invalid formSubmitURL generated a good error.");
+
   yield privilegedExtension.unload();
   yield unprivilegedExtension.unload();
   apiExtension.uninstall();

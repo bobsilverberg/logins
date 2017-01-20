@@ -71,20 +71,24 @@ class API extends ExtensionAPI {
             try {
               uri = Services.io.newURI(info[field], null, null);
             } catch (err) {
-              return Promise.reject({message: `Cannot parse ${field} as a URL`});
+              return `Cannot parse ${field} as a URL`;
             }
 
             if (origin) {
               if (uri.prePath != origin) {
-                return Promise.reject({message: `Origin does not match ${field}`});
+                return `Origin does not match ${field}`;
               }
             } else {
               origin = uri.prePath;
             }
           }
 
-          check("formSubmitURL");
-          check("realm");
+          for (let field of ["formSubmitURL", "realm"]) {
+            let checkMsg = check(field);
+            if (checkMsg) {
+              return Promise.reject({message: checkMsg});
+            }
+          }
 
           if (!origin) {
             return Promise.reject({message: "Must specify origin, formSubmitURL, or realm"});
